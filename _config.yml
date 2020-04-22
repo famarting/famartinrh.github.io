@@ -20,5 +20,16 @@ styles: [agate, androidstudio, arta, asceti, atelier-cave.dark, atelier-cave.lig
 exclude: ["README.md", "README.html"]
 
 # Build settings
-highlighter: null
+# highlighter: null
+# highlighter: rouge
+
 markdown: kramdown
+# kramdown:
+#   input: GFM
+#   syntax_highlighter_opts:
+#     default_lang: html
+#     css_class: 'highlight'
+#     span:
+#       line_numbers: false
+#     block:
+#       line_numbers: false

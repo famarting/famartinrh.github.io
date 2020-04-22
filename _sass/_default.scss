@@ -20,6 +20,11 @@ p {
     line-height: 32px;
 }
 
+li {
+    font-size: 20px;
+    line-height: 32px;
+}
+
 img {
     margin: 40px auto;
     display: block;
@@ -156,12 +161,17 @@ strong {
 
 .post-teaser {
     margin-bottom: 70px;
-    font-weight: 700;
+    // font-weight: 700;
 }
 
 .post-teaser__title {
     font-size: 26px;
     color: $iron;
+}
+
+.post-teaser__text {
+    font-size: 20px;
+    line-height: 32px;
 }
 
 .post-teaser__date {
