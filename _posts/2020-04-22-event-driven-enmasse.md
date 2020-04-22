@@ -16,11 +16,11 @@ The Event-Driven Architecture can be described as an architectural pattern for d
 <!--more-->
 
 In this architecture the events are the representation of a meaninfull change in the system, like "a new user has been registered" or "a new order has been placed". Usually event's payload contain meaninfull information related to the entity the event is related to. Events can be classified in three types: Volatile, Durable and Replayable.
-- Volatile events are those that are not stored by the messaging middelware and are lost if there is not connected consumer in the moment they are produced.
+- Volatile events are those that are not stored by the messaging middleware and are lost if there is not connected consumer in the moment they are produced.
 - Durable events, the most typical and common, here events are stored durably until read by all registered consumers.
 - Replayable events, similar to durable events, but in this case the events are kept stored for a determined period of time and there is the possibility for consumers to replay the stored sequence of events.
 
-As described, events are sent through channels, by channels I mean the piece of middelware we use to send our events through. Here I'm talking about queues and topics implemented by messaging brokers. There are a big variety of messaging brokers each one providing it's own set of features and behaviours and in many cases different protocols to communicate with the broker. This is important because this makes all the different event types that we know or the different eventing models or messaging patterns that our applications can make use of. In simple words, the messaging broker we choose determines the kind of events we can use in our application, therefore we should choose in concordance with our application needs.
+As described, events are sent through channels, by channels I mean the piece of middleware we use to send our events through. Here I'm talking about queues and topics implemented by messaging brokers. There are a big variety of messaging brokers each one providing it's own set of features and behaviours and in many cases different protocols to communicate with the broker. This is important because this makes all the different event types that we know or the different eventing models or messaging patterns that our applications can make use of. In simple words, the messaging broker we choose determines the kind of events we can use in our application, therefore we should choose in concordance with our application needs.
 
 If talking about microservices, Event-Driven Architectures can bring some advantages such as:
 - decoupling microservices, separating and abstracting between each other, this is the separation of producers of events and consumers of events. As an example, a user service will produce an event when a new user is created and other microservices in the application, doesn't matter which ones, will consume that event and do whatever action they need to do in response to that.
@@ -71,7 +71,7 @@ Following I will show and describe the different resources used to build the exa
 ### Enmasse side
 
 There is a queue created for buffering the load between the rest api and the orders-processor, this is the Enmasse Address definition used:
-{% highlight yml %}
+```yaml
 apiVersion: enmasse.io/v1beta1
 kind: Address
 metadata:
@@ -80,10 +80,10 @@ spec:
   address: orders
   type: queue
   plan: standard-medium-queue
-{% endhighlight %}
+```
 
 For the output of orders-processor there is a topic created.
-{% highlight yml %}
+```yaml
 apiVersion: enmasse.io/v1beta1
 kind: Address
 metadata:
@@ -92,11 +92,11 @@ spec:
   address: processed-orders
   type: topic
   plan: standard-small-topic
-{% endhighlight %}
+```
 
 As shown in the first diagram, request-response pattern is used between orders-processor and stock-service. As most microservices architectures do, this request-response can be implemented with a http request from orders-processor to stock-service, but because we are playing with Enmasse we will use an Anycast Address which allows to implement the request-response pattern using our AMQP infrastructure.
 
-{% highlight yml %}
+```yaml
 apiVersion: enmasse.io/v1beta1
 kind: Address
 metadata:
@@ -105,7 +105,7 @@ spec:
   address: stocks
   type: anycast
   plan: standard-medium-anycast
-{% endhighlight %}
+```
 
 However the communication between orders-processor and stock-service can be implemented in several ways, in a more Event-Driven manner we can get rid of the direct communication between these two services by using more queues, leaving us with a flow as follows.
 
@@ -113,7 +113,7 @@ However the communication between orders-processor and stock-service can be impl
 
 In addition to the addresses shown, my [implementation] adds a Multicast Address used as a common logs channel, I implemented all my components to send some logging information to a Multicast address so I can follow in real time the status of the system by consuming messages from that address. 
 
-{% highlight yml %}
+```yaml
 apiVersion: enmasse.io/v1beta1
 kind: Address
 metadata:
@@ -122,13 +122,13 @@ spec:
   address: events
   type: multicast
   plan: standard-medium-multicast
-{% endhighlight %}
+```
 
 Multicast and Anycast address, because of it's volatile nature, are really useful for some usecases where the information sent it's not critical and the amount of messages sent over time is quite large. A common example is telemetry data in IoT usecases, which btw is also covered by Enmasse (check the [iot documentation]), because of the volume of telemetry data can have over time you may not want to send it through queues or topics which will store and forward the messages to the consumers, this is expensive, due to the data it's not critical you may prefer just send it to the consumer or throw it if there isn't one available, the consumer will receive the info in the next telemetry loop iteration.
 
 Something important not mentioned yet about Enmasse configuration for this microservices example is the AddressSpace resource, it is neccesary to hold all the addresses that we want to create.
 
-{% highlight yml %}
+```yaml
 apiVersion: enmasse.io/v1beta1
 kind: AddressSpace
 metadata:
@@ -146,11 +146,11 @@ spec:
     exports:
     - name: messaging-config
       kind: ConfigMap
-{% endhighlight %}
+```
 
 Notice in the AddressSpace example yaml the "exports" part, this is really useful for easily configure the connection details of our microservices. With that setting Enmasse will create a ConfigMap called "messaging-config" which we can use in our microservices deployments to pick the AMQP endpoint host and port values so our clients know where they have to connect to. Following, there is an example of a deployment taking the values from the ConfigMap and setting those as environment variables.
 
-{% highlight yml %}
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -160,7 +160,7 @@ spec:
   selector:
     matchLabels:
       app: stocks-service
-  template:yml
+  template:
         app: stocks-service
     spec:
       containers:
@@ -180,7 +180,7 @@ spec:
             value: demo-user
           - name: amqp-password
             value: demo-user
-{% endhighlight %}
+```
 
 ### Microservices side
 
@@ -195,7 +195,7 @@ Quarkus is based on [Vert.x](https://vertx.io/) and then we can easily use Vert.
 
     @Incoming("orders")
     public CompletionStage<Void> processOrder(JsonObject order) {
-        return stocks.requestStock(order.getString("order-id"), order.getString("item-id"), order.getInteger("quantity"))
+        return stocks.requestStock(buildStockRequest(order))
             .thenAccept(result -> {
                 JsonObject processedResult = processResult(order, result);
                 processedOrders.send(processedResult);

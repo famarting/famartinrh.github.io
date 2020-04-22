@@ -1,5 +1,6 @@
 ---
 layout: page
+site_title: true
 title: About
 subtitle: This is Fabian, passionate about coding and software engineering trends
 permalink: /about/
