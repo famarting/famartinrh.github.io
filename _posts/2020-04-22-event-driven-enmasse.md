@@ -64,6 +64,8 @@ Let's continue learning about Enmasse by showing it's usage in an example micros
 In the image above we can see the different components of the example application. 
 Quickly described: A REST API receives orders requesting some stock for one item in the warehouse, each order is enqueued in a "orders" queue, after that orders-processor receives them one by one and sends a request to the stock-service, which stores in a database the stock values, requesting the appropiate stock for a particular item. Then stock-service replies to orders-processor which receives the result of the stock request and at that point orders-processor consider this order as processed, generating an event in "processed-orders" topic allowing for other systems to plug in and act in response. This has been a pretty quick and high level description of what the example application do.
 
+My implementation for the example application can be found [here](https://github.com/famartinrh/enmasse-quarkus-warehouse-demo)
+
 ## What is used?
 
 Following I will show and describe the different resources used to build the example application.
@@ -215,7 +217,6 @@ Enmasse is a useful project for enterprise level management of AMQP based messag
 [Quarkus]: <https://quarkus.io/>
 [Enmasse]: <https://enmasse.io/>
 [Strimzi]: <https://strimzi.io/>
-[here]: <https://github.com/famartinrh/enmasse-quarkus-warehouse-demo>
 [implementation]: <https://github.com/famartinrh/enmasse-quarkus-warehouse-demo>
 [iot documentation]: <https://enmasse.io/documentation/master/openshift/#iot-guide-messaging-iot>
 [Enmasse documentation]: <https://enmasse.io/documentation/master/openshift/>
