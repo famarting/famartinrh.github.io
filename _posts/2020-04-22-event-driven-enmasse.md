@@ -47,13 +47,13 @@ Enmasse has several concepts that is important to understand. I'm not going to d
 
 To start easy just think Enmasse users can have two different roles, service admin and messaging tenant. Service admins use some APIs to configure the operator and predefine infrastructure configuration as well as resource limits for the usage of the infrastructure. In the other hand, messaging tenants can request messaging resources which will use some of the plans created by service admins. This way admins can configure the limits of the infrastructure and tenants can safely create it's queues and topics. I like to think of this like, ops people configuring the Kubernetes cluster and developers requesting queues and topics for it's applications.
 
-Focusing on the messaging tenant side, in the current Enmasse implementation there are three APIs available: AddressSpace, Addresse and MessagingUser. Ideally developers will only need to take care of requesting Addresses, and that may be the case in near future Enmasse implementation.
+Focusing on the messaging tenant side, in the current Enmasse implementation there are three APIs available: AddressSpace, Address and MessagingUser. Ideally developers will only need to take care of requesting Addresses, and that may be the case in near future Enmasse implementation.
 
 The AddressSpace concept is the starting point for messaging tenants when requesting resources, one AddressSpace holds a collection of Addresses. There are two types of AddressSpaces: standard and brokered. Messaging infrastructure is deployed differently for each AddressSpace type, standard type relies in a topology based of a router mesh in front of a series of AMQP brokers and brokered type just deploys AMQP brokers. We will be focusing on standard AddressSpace type. It's important to highlight that, among other limitations, standard AddressSpace type doesn't guarantee message ordering, more info can be found in [Enmasse documentation].
 
-The concept of Address represents, as described earlier in this blog, a channel. Addresses have a type that determines the semantics it will have once deployed. The possible Address types, for the standard AddressSpace type, are: anycast, multicast, queue, topic and subscription. Anycast and Multicast addresses allow for direct communication without store-and-forward, both producer and consumer/s have to be connected at the moment of transmitting the message. Queue and Topic address types allow for store-and-forward messaging pattern, so consumer doesn't need to be connected when the producer sends the message. Subscription is kind of a subtype of Topic address, this type won't be covered in this blog. Related to Event-Driven this address types map to event types as follow, anycast and multicast allow to implement the volatile event type and queue and topic implement the durable event type. 
+The concept of Address represents, as described earlier in this blog, a channel. Addresses have a type that determines the semantics it will have once deployed. The possible Address types, for the standard AddressSpace type, are: anycast, multicast, queue, topic and subscription. Anycast and Multicast address types allow for direct communication without store-and-forward, both producer and consumer/s have to be connected at the moment of transmitting the message. Queue and Topic address types allow for store-and-forward messaging pattern, so consumer doesn't need to be connected when the producer sends the message. Subscription is kind of a subtype of Topic address, this type won't be covered in this blog. Related to Event-Driven this address types map to event types as follow, anycast and multicast allow to implement the volatile event type and queue and topic implement the durable event type. 
 
-MessagingUser is the last API I would like to highlight. Enmasse integrates authentication and authorization capabilities for the usage of the Addresses, this is configured through MessagingUser CRD. MessagingUser determines the credentials which will be used by our applications to authenticate to the AMQP endpoint as well as what operations can our applications do in certain addresses.
+MessagingUser is the last API I would like to highlight. Enmasse integrates authentication and authorization capabilities for the usage of the Addresses, this is configured through MessagingUser CRD. MessagingUser determines the credentials which will be used by our applications to authenticate to the AMQP endpoint as well as what operations can our applications do in certain Addresses.
 
 # Learning by example
 
@@ -111,7 +111,7 @@ However the communication between orders-processor and stock-service can be impl
 
 ![High level diagram, all queues](/assets/images/diagram-all-queues.png)
 
-In addition to the addresses shown, my [implementation] adds a Multicast Address used as a common logs channel, I implemented all my components to send some logging information to a Multicast address so I can follow in real time the status of the system by consuming messages from that address. 
+In addition to the Addresses shown, my [implementation] adds a Multicast Address used as a common logs channel, I implemented all my components to send some logging information to a Multicast address so I can follow in real time the status of the system by consuming messages from that address. 
 
 ```yaml
 apiVersion: enmasse.io/v1beta1
@@ -124,9 +124,9 @@ spec:
   plan: standard-medium-multicast
 ```
 
-Multicast and Anycast address, because of it's volatile nature, are really useful for some usecases where the information sent it's not critical and the amount of messages sent over time is quite large. A common example is telemetry data in IoT usecases, which btw is also covered by Enmasse (check the [iot documentation]), because of the volume of telemetry data can have over time you may not want to send it through queues or topics which will store and forward the messages to the consumers, this is expensive, due to the data it's not critical you may prefer just send it to the consumer or throw it if there isn't one available, the consumer will receive the info in the next telemetry loop iteration.
+Multicast and Anycast address, because of it's volatile nature, are really useful for some usecases where the information sent it's not critical and the amount of messages sent over time is quite large. A common example is telemetry data in IoT usecases, which by the way is also covered by Enmasse (check the [iot documentation]), because of the volume of telemetry data can have over time you may not want to send it through queues or topics which will store and forward the messages to the consumers, this is expensive, due to the data it's not critical you may prefer just send it to the consumer or throw it if there isn't one available, the consumer will receive the info in the next telemetry loop iteration.
 
-Something important not mentioned yet about Enmasse configuration for this microservices example is the AddressSpace resource, it is necessary to hold all the addresses that we want to create.
+Something important not mentioned yet about Enmasse configuration for this microservices example is the AddressSpace resource, it is necessary to hold all the Addresses that we want to create.
 
 ```yaml
 apiVersion: enmasse.io/v1beta1
@@ -184,7 +184,7 @@ spec:
 
 ### Microservices side
 
-In my example [implementation] all the microservices are implemented in Java using [Quarkus]. Why Quarkus? Mainly because it's cool and fun to play with but actually Quarkus has some benefits that come quite handy for the implementation of this example application. A really good description of what quarkus is can be found [here](https://www.redhat.com/en/topics/cloud-native-apps/what-is-quarkus).
+In my example [implementation] all the microservices are implemented in Java using [Quarkus]. Why Quarkus? Mainly because it's cool and fun to play with but actually Quarkus has some benefits that come quite handy for the implementation of this example application. A really good description of what Quarkus is can be found [here](https://www.redhat.com/en/topics/cloud-native-apps/what-is-quarkus).
 
 Quarkus is based on [Vert.x](https://vertx.io/) and then we can easily use Vert.x AMQP client which is one of the best clients for AMQP in the Java world and the good news don't finish here, we can use [Eclipse Microprofile Reactive Messaging] with Quarkus which gives us a more simple API and allows for an annotation based programming model.
 
