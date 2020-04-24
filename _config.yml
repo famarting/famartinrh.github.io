@@ -5,7 +5,7 @@ description: >
   Blogs about topics of my interest.
 
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "http://famartin.blog.io" # the base hostname & protocol for your site
+# url: "http://famartin.blog.io" # the base hostname & protocol for your site
 
 author:
   fullname: Fabián Martínez González
