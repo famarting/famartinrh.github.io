@@ -3,7 +3,7 @@ layout: post
 title:  "Event-Driven microservices with Enmasse"
 subtitle: "The joy of doing Event-Driven Microservices using Enmasse and Quarkus"
 description: >
-  The purpose of this blog is to talk about Event-Driven based microservices and explore it's combination with Enmasse, a Kubernetes operator to manage AMQP based messaging infrastructure. Because of microservices Quarkus, container-first Java stack, is also showcased.
+  The purpose of this blog is to talk about Event-Driven based microservices and explore it's combination with Enmasse, a Kubernetes operator to manage AMQP based messaging infrastructure. Because of microservices, Quarkus, a container-first Java stack, is also showcased.
   <br>
   This blog is for people in Kubernetes world, software developers interested in the full picture of applications and systems or any other interested.
 date:   2020-04-22
@@ -20,7 +20,7 @@ In this architecture the events are the representation of a meaningful change in
 - Durable events, the most typical and common, here events are stored durably until read by all registered consumers.
 - Replayable events, similar to durable events, but in this case the events are kept stored for a determined period of time and there is the possibility for consumers to replay the stored sequence of events.
 
-As described, events are sent through channels, by channels I mean the piece of middleware we use to send our events through. Here I'm talking about queues and topics implemented by messaging brokers. There are a big variety of messaging brokers each one providing it's own set of features and behaviours and in many cases different protocols to communicate with the broker. This is important because this makes all the different event types that we know or the different eventing models or messaging patterns that our applications can make use of. In simple words, the messaging broker we choose determines the kind of events we can use in our application, therefore we should choose in concordance with our application needs.
+As described, events are sent through channels, by channels I mean the piece of middleware we use to send our events through. Here I'm talking about queues and topics implemented by messaging brokers. There is a big variety of messaging brokers each one providing it's own set of features and behaviours and in many cases different protocols to communicate with the broker. This is important because this makes all the different event types that we know or the different eventing models or messaging patterns that our applications can make use of. In simple words, the messaging broker we choose determines the kind of events we can use in our application, therefore we should choose in concordance with our application needs.
 
 If talking about microservices, Event-Driven Architectures can bring some advantages such as:
 - decoupling microservices, separating and abstracting between each other, this is the separation of producers of events and consumers of events. As an example, a user service will produce an event when a new user is created and other microservices in the application, doesn't matter which ones, will consume that event and do whatever action they need to do in response to that.
@@ -33,17 +33,17 @@ With that being said looks like an Event-Diven Architecture is a killer approach
 
 About messaging infrastructure, if you are doing microservices you are likely using Kubernetes, so you may want to run your messaging infrastructure inside Kubernetes as well, and if the installation and management of that infrastructure can be automated using Kubernetes operators that's even better. There are two options here that I would like to remark, each one with it's own specific characteristics making a difference in the kind of events that our application will be able to use.
 
-You probably have heard of [Apache Kafka](https://kafka.apache.org/), a high performing commit log based messaging broker that use it's own protocol and set of clients. Very popular nowadays and a solid choice for most event driven applications. To highlight, it allows for replayable events thanks to it's commit log based implementation. For the Kubernetes world there is [Strimzi] an open-source Kubernetes operator to deploy and manage kafka brokers installations.
+You probably have heard of [Apache Kafka](https://kafka.apache.org/), a high performing, commit log based messaging broker that use it's own protocol and set of clients. Very popular nowadays and a solid choice for most event driven applications. To highlight, it allows for replayable events thanks to it's commit log based implementation and the way it's clients operate. For the Kubernetes world there is [Strimzi] an open-source Kubernetes operator to deploy and manage kafka brokers installations.
 
-Other option I would like to highlight is going for an AMQP based broker, [AMQP](https://www.amqp.org/) is a standardized and battle tested protocol for messaging. There are plenty of options here but if we want a solution inside the Kubernetes world a good choice is [Enmasse], claimed as self-service messaging on Kubernetes. Enmasse is an open-source Kubernetes operator to deploy and manage AMQP based messaging infrastructure.Enmasse is based in other open-source projects such as [Apache ActiveMQ](https://activemq.apache.org/), [Apache Qpid Dispatch Router](https://qpid.apache.org/components/dispatch-router/index.html)... Enmasse provides a series of abstractions that allow developers to carelessly request messaging resources for their applications and at the same time allowing admins to manage resource limits. As per an Event-Driven architecture, and opposite to Strimzi, Enmasse does not support replayable events but supports volatile and durable event types.
+The other option I would like to highlight is going for an AMQP based broker, [AMQP](https://www.amqp.org/) is a standardized and battle tested protocol for messaging. There are plenty of options here but if we want a solution inside the Kubernetes world a good choice is [Enmasse], claimed as self-service messaging on Kubernetes. Enmasse is an open-source Kubernetes operator to deploy and manage AMQP based messaging infrastructure. Enmasse is based in other open-source projects such as [Apache ActiveMQ](https://activemq.apache.org/), [Apache Qpid Dispatch Router](https://qpid.apache.org/components/dispatch-router/index.html)... Enmasse provides a series of abstractions that allow developers to carelessly request messaging resources for their applications and at the same time allowing admins to manage resource limits. As per an Event-Driven architecture, and opposite to Strimzi, Enmasse does not support replayable events but supports volatile and durable event types.
 
-As stated in the title of this blog, the purpose here is to explore Enmasse so I'm going to focus on showcase some of it's functionalities as well as show that it is useful as the messaging infrastructure provider for an Event-Driven based microservices architecture.
+As stated in the title of this blog, the purpose here is to explore Enmasse so I'm going to focus on showcasing some of it's functionalities as well as showing Enmasse is useful as the messaging infrastructure provider for an Event-Driven based microservices architecture.
 
 ## Enmasse
 
 ![Enmasse logo](https://raw.githubusercontent.com/EnMasseProject/enmasse/master/documentation/_images/logo/enmasse_logo.png)
 
-Enmasse has several concepts that is important to understand. I'm not going to do a deep explanation of Enmasse concepts, that can be found in the [Enmasse documentation]. Here I just want to highlight some basic ideas so we are all on the same page.
+Enmasse has several concepts that are important to understand. I'm not going to give a deep explanation of Enmasse concepts, that can be found in the [Enmasse documentation]. Here I just want to highlight some basic ideas so we are all on the same page.
 
 To start easy just think Enmasse users can have two different roles, service admin and messaging tenant. Service admins use some APIs to configure the operator and predefine infrastructure configuration as well as resource limits for the usage of the infrastructure. In the other hand, messaging tenants can request messaging resources which will use some of the plans created by service admins. This way admins can configure the limits of the infrastructure and tenants can safely create it's queues and topics. I like to think of this like, ops people configuring the Kubernetes cluster and developers requesting queues and topics for it's applications.
 
@@ -51,13 +51,13 @@ Focusing on the messaging tenant side, in the current Enmasse implementation the
 
 The AddressSpace concept is the starting point for messaging tenants when requesting resources, one AddressSpace holds a collection of Addresses. There are two types of AddressSpaces: standard and brokered. Messaging infrastructure is deployed differently for each AddressSpace type, standard type relies in a topology based of a router mesh in front of a series of AMQP brokers and brokered type just deploys AMQP brokers. We will be focusing on standard AddressSpace type. It's important to highlight that, among other limitations, standard AddressSpace type doesn't guarantee message ordering, more info can be found in [Enmasse documentation].
 
-The concept of Address represents, as described earlier in this blog, a channel. Addresses have a type that determines the semantics it will have once deployed. The possible Address types, for the standard AddressSpace type, are: anycast, multicast, queue, topic and subscription. Anycast and Multicast address types allow for direct communication without store-and-forward, both producer and consumer/s have to be connected at the moment of transmitting the message. Queue and Topic address types allow for store-and-forward messaging pattern, so consumer doesn't need to be connected when the producer sends the message. Subscription is kind of a subtype of Topic address, this type won't be covered in this blog. Related to Event-Driven this address types map to event types as follow, anycast and multicast allow to implement the volatile event type and queue and topic implement the durable event type. 
+The concept of Address represents, as described earlier in this blog, a channel. Addresses have a type that determines the semantics it will have once deployed. The possible Address types, for the standard AddressSpace type, are: anycast, multicast, queue, topic and subscription. Anycast and Multicast address types allow for direct communication without store-and-forward, both producer and consumer/s have to be connected at the moment the message is sent. Queue and Topic address types allow for store-and-forward messaging pattern, so consumer doesn't need to be connected when the producer sends the message. Subscription is kind of a subtype of Topic address, this type won't be covered in this blog. Related to Event-Driven this address types map to event types as follow, anycast and multicast allow to implement the volatile event type and queue and topic implement the durable event type.
 
 MessagingUser is the last API I would like to highlight. Enmasse integrates authentication and authorization capabilities for the usage of the Addresses, this is configured through MessagingUser CRD. MessagingUser determines the credentials which will be used by our applications to authenticate to the AMQP endpoint as well as what operations can our applications do in certain Addresses.
 
 # Learning by example
 
-Let's continue learning about Enmasse by showing it's usage in an example microservices application, take a look at the high level diagram of a completely non realistic application for the management of a warehouse. Disclaimer, please take this as an example with demo purposes just to write some microservices using the different functionalities of Enmasse.
+Let's continue learning about Enmasse by showing it's usage in an example microservices application. Take a look at the high level diagram of a completely non realistic application for the management of a warehouse. Disclaimer, please take this as an example with demo purposes just to write some microservices using the different functionalities of Enmasse.
 
 ![High level diagram](/assets/images/diagram.png)
 
@@ -68,7 +68,7 @@ My implementation for the example application can be found [here](https://github
 
 ## What is used?
 
-Following I will show and describe the different resources used to build the example application.
+Following I will show and describe the different resources used to build the example application. I implemented this microservices application with Java and Quarkus and I used enmasse for the messaging infrastructure.
 
 ### Enmasse side
 
@@ -126,7 +126,7 @@ spec:
   plan: standard-medium-multicast
 ```
 
-Multicast and Anycast address, because of it's volatile nature, are really useful for some usecases where the information sent it's not critical and the amount of messages sent over time is quite large. A common example is telemetry data in IoT usecases, which by the way is also covered by Enmasse (check the [iot documentation]), because of the volume of telemetry data can have over time you may not want to send it through queues or topics which will store and forward the messages to the consumers, this is expensive, due to the data it's not critical you may prefer just send it to the consumer or throw it if there isn't one available, the consumer will receive the info in the next telemetry loop iteration.
+Multicast and Anycast address, because of it's volatile nature, are really useful for some usecases where the information sent it's not critical and the amount of messages sent over time is quite large. A common example is telemetry data in IoT usecases, which by the way is also covered by Enmasse (check the [iot documentation]). Because of the volume of telemetry data can have over time you may not want to send it through queues or topics which will store and forward the messages to the consumers, this would be too expensive. Due to telemetry data may not be critical you may just prefer to send it to the consumer only when it is connected or throw it if not.
 
 Something important not mentioned yet about Enmasse configuration for this microservices example is the AddressSpace resource, it is necessary to hold all the Addresses that we want to create.
 
@@ -150,7 +150,7 @@ spec:
       kind: ConfigMap
 ```
 
-Notice in the AddressSpace example yaml the "exports" part, this is really useful for easily configure the connection details of our microservices. With that setting Enmasse will create a ConfigMap called "messaging-config" which we can use in our microservices deployments to pick the AMQP endpoint host and port values so our clients know where they have to connect to. Following, there is an example of a deployment taking the values from the ConfigMap and setting those as environment variables.
+Notice in the AddressSpace example yaml the "exports" part, this is really useful for easily configuring the connection details of our microservices. With that setting Enmasse will create a ConfigMap called "messaging-config" which we can use in our deployments to pick the AMQP endpoint host and port values so our clients know where they have to connect to. Following, there is an example of a deployment taking the values from the ConfigMap and setting those as environment variables.
 
 ```yaml
 apiVersion: apps/v1
@@ -186,9 +186,9 @@ spec:
 
 ### Microservices side
 
-In my example [implementation] all the microservices are implemented in Java using [Quarkus]. Why Quarkus? Mainly because it's cool and fun to play with but actually Quarkus has some benefits that come quite handy for the implementation of this example application. A really good description of what Quarkus is can be found [here](https://www.redhat.com/en/topics/cloud-native-apps/what-is-quarkus).
+In my example [implementation] all the microservices are implemented in Java using [Quarkus]. Why Quarkus? Mainly because it's cool and fun to play with, but actually Quarkus has some benefits that come quite handy for the implementation of this example application. A really good description of what Quarkus is can be found [here](https://www.redhat.com/en/topics/cloud-native-apps/what-is-quarkus).
 
-Quarkus is based on [Vert.x](https://vertx.io/) and then we can easily use Vert.x AMQP client which is one of the best clients for AMQP in the Java world and the good news don't finish here, we can use [Eclipse Microprofile Reactive Messaging] with Quarkus which gives us a more simple API and allows for an annotation based programming model.
+Quarkus is based on [Vert.x](https://vertx.io/) and then we can easily use Vert.x AMQP client which is one of the best clients for AMQP in the Java world, and the good news don't finish here, we can use [Eclipse Microprofile Reactive Messaging] with Quarkus which gives us a more simple API and allows for an annotation based programming model. See below some Java code showcasing the usage of Microprofile Reactive Messaging.
 
 ```java
     @Inject
@@ -207,7 +207,7 @@ Quarkus is based on [Vert.x](https://vertx.io/) and then we can easily use Vert.
 
 The possibility of using Microprofile Reactive Messaging is a really good addition as it allows to abstract the application from the protocol used. So in the future moving to a different messaging infrastructure, based on other protocols, won't require a massive rewrite of the application. 
 
-However nothing is perfect and solutions such as Microprofile Reactive Messaging are not less, you probably will always face situations where all the functionalities of the AMQP protocol, or whatever other protocol you are using with Microprofile Reactive Messaging, are needed in your applications, in those cases you will likely use Vert.x AMQP client to take advantage of all of it's functionalities.
+However nothing is perfect and solutions such as Microprofile Reactive Messaging are not less, you probably will always face situations where all the functionalities of the AMQP protocol are needed in your applications, in those cases you will likely use Vert.x AMQP client to take advantage of all of it's functionalities.
 
 # Conclusions
 
